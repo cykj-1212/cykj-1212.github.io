@@ -19,7 +19,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            min-height: 1000px;
+            min-height: 600px;
             position: relative;
         }
         .logo-container {
@@ -27,12 +27,12 @@
             left: 50%;
             transform: translateX(-50%);
             top: 10px;
-            width: 400px;
+            width: 200px;
             text-align: center;
             background: transparent;
         }
         .logo {
-            width: 400px;
+            width: 200px;
             height: auto;
             background: transparent;
         }
@@ -41,10 +41,10 @@
             padding: 20px;
         }
         .input-section {
-            margin-top: 360px;
+            margin-top: 80px;
         }
         .result-section {
-            margin-top: 360px;
+            margin-top: 80px;
         }
         .header-with-logo {
             display: flex;
@@ -64,6 +64,40 @@
         .input-group {
             margin-bottom: 15px;
             margin-top: 20px;
+        }
+        .select-group {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        .select-container {
+            flex: 1;
+        }
+        .select-label {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: block;
+        }
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            font-size: 14px;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 30px;
+        }
+        select:focus {
+            outline: none;
+            border-color: #4CAF50;
         }
         label {
             display: block;
@@ -132,14 +166,61 @@
     <h1><span class="title-red">诚誉跨境</span><span class="title-black">定价计算器</span></h1>
     <div class="container">
         <div class="logo-container">
-            <img src="WechatIMG371.jpg" alt="诚誉跨境" class="logo">
+            <img src="诚誉logo.jpg" alt="诚誉跨境" class="logo">
+        </div>
+        <div id="exchange-rate" style="position: absolute; top: 10px; left: 20px;">
+            <div style="display: flex; align-items: center;">
+                <span>人民币 → 卢布</span>
+                <span id="loading-text" style="color: green; margin-left: 10px;">加载中...</span>
+            </div>
+            <div id="rate-value" style="font-size: 1.2em; font-weight: bold; margin-top: 5px;"></div>
+            <div id="update-time" style="font-size: 0.8em; color: #666; margin-top: 3px;"></div>
+        </div>
+        <div id="exchange-rate-right" style="position: absolute; top: 10px; right: 20px;">
+            <div style="display: flex; align-items: center;">
+                <span>美元 → 人民币</span>
+                <span id="loading-text-right" style="color: green; margin-left: 10px;">加载中...</span>
+            </div>
+            <div id="rate-value-right" style="font-size: 1.2em; font-weight: bold; margin-top: 5px;"></div>
+            <div id="update-time-right" style="font-size: 0.8em; color: #666; margin-top: 3px;"></div>
         </div>
         <div class="input-section">
             <div class="input-group">
                 <div class="header-with-logo">
                     <h2>基础信息</h2>
                 </div>
-                <label for="sellingPrice">卖价 (CNY)</label>
+                <div class="select-group">
+                    <div class="select-container">
+                        <label class="select-label">选择物流商</label>
+                        <select id="logisticsProvider">
+                            <option value="">手动选择</option>
+                            <option value="GUOO">GUOO</option>
+                            <option value="UNI">UNI</option>
+                            <option value="CEL">CEL</option>
+                            <option value="IML">IML</option>
+                            <option value="URAL">URAL</option>
+                            <option value="OYX">OYX</option>
+                        </select>
+                    </div>
+                    <div class="select-container" id="shippingMethodContainer" style="display: none;">
+                        <label class="select-label">选择运输方式</label>
+                        <select id="shippingMethod">
+                            <option value="">手动选择</option>
+                            <option value="air">空运</option>
+                            <option value="air_land">陆空联运</option>
+                            <option value="land">陆运</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="select-container" style="margin-bottom: 20px;">
+                    <label class="select-label">物流方案</label>
+                    <div id="shippingTypeDisplay" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; background-color: #f8f9fa;">
+                        自动识别适用物流方案
+                    </div>
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="sellingPrice">商品售价 (CNY)</label>
                 <input type="number" id="sellingPrice" min="0" step="0.01" value="0" ondblclick="this.value=''">
             </div>
             <div class="input-group">
@@ -154,18 +235,6 @@
                 <label for="platformFee">平台佣金 (%)</label>
                 <input type="number" id="platformFee" min="0" max="100" step="0.01" value="20" ondblclick="this.value=''">
             </div>
-            <div class="input-group">
-                <label for="manualShippingType">手动选择物流方案</label>
-                <select id="manualShippingType" onchange="calculatePrice()">
-                    <option value="">自动选择</option>
-                    <option value="superLight">超级轻小件 (0.1-500g)</option>
-                    <option value="lowBig">低客单大件 (0.1-25000g)</option>
-                    <option value="mediumSmall">中客单小件 (0.1-2000g)</option>
-                    <option value="mediumBig">中客单大件 (2000-25000g)</option>
-                    <option value="highSmall">高客单小件 (0.1-5000g)</option>
-                    <option value="highBig">高客单大件 (5000-25000g)</option>
-                </select>
-            </div>
         </div>
         <div class="result-section">
             <div class="input-group">
@@ -177,26 +246,589 @@
         </div>
     </div>
     <div class="instructions">
-        <h2>使用说明</h2>
-        <ol>
-            <li>输入商品卖价（人民币）</li>
-            <li>输入商品采购价格（人民币）</li>
-            <li>输入商品重量（克）</li>
-            <li>设置平台佣金（百分比）</li>
-            <li>结果将自动更新</li>
-        </ol>
+        <div style="display: flex; gap: 20px; align-items: flex-start;">
+            <div style="flex: 1;">
+                <h2>使用说明</h2>
+                <ol>
+                    <li>选择物流商</li>
+                    <li>选择运输方式</li>
+                    <li>输入商品售价（人民币）</li>
+                    <li>输入商品采购价格（人民币）</li>
+                    <li>输入商品重量（克）</li>
+                    <li>设置平台佣金（百分比）</li>
+                    <li>计算结果将自动更新</li>
+                </ol>
+            </div>
+            <div style="text-align: center;">
+                <img src="客服二维码.jpg" alt="客服二维码" style="width: 150px; height: auto;">
+                <p style="margin-top: 10px; font-weight: bold;">如有发现错误请联系客服修改</p>
+                <p style="margin-top: 5px; font-weight: bold; color: red;">祝各位老板大卖！</p>
+            </div>
+        </div>
     </div>
 
     <script>
-        // 为所有输入框添加实时计算事件
+        let usdCnyRate = 7.3; // 默认美元兑人民币汇率
+        let usdRubRate = 92; // 默认美元兑卢布汇率
+
+        // 从localStorage获取汇率
+        function getStoredRates() {
+            const stored = localStorage.getItem('exchangeRates');
+            if (stored) {
+                const data = JSON.parse(stored);
+                const now = new Date().getTime();
+                // 检查是否过期（1小时）
+                if (now - data.timestamp < 3600000) {
+                    return data;
+                }
+            }
+            return null;
+        }
+
+        // 保存汇率到localStorage
+        function storeRates(cny, rub) {
+            const data = {
+                timestamp: new Date().getTime(),
+                cny: cny,
+                rub: rub
+            };
+            localStorage.setItem('exchangeRates', JSON.stringify(data));
+        }
+
+        // 格式化时间
+        function formatDateTime(timestamp) {
+            const date = new Date(timestamp);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}`;
+        }
+
+        // 更新汇率显示
+        function updateRateDisplay(timestamp, cnyRubRate) {
+            // 更新左侧汇率显示
+            document.getElementById('loading-text').textContent = '实时汇率';
+            document.getElementById('rate-value').textContent = `1 CNY = ${cnyRubRate} RUB`;
+            document.getElementById('update-time').textContent = `更新时间: ${formatDateTime(timestamp)}`;
+            
+            // 更新右侧汇率显示（美元）
+            document.getElementById('loading-text-right').textContent = '实时汇率';
+            document.getElementById('rate-value-right').textContent = `1 USD = ${usdCnyRate.toFixed(4)} CNY`;
+            document.getElementById('update-time-right').textContent = `更新时间: ${formatDateTime(timestamp)}`;
+        }
+
+        // 获取实时汇率
+        async function fetchExchangeRates() {
+            // 先检查localStorage中的汇率是否可用
+            const storedRates = getStoredRates();
+            if (storedRates) {
+                usdCnyRate = storedRates.cny;
+                usdRubRate = storedRates.rub;
+                const cnyRubRate = (usdRubRate / usdCnyRate).toFixed(4);
+                updateRateDisplay(storedRates.timestamp, cnyRubRate);
+                calculatePrice();
+                return;
+            }
+
+            try {
+                const response = await fetch('https://v6.exchangerate-api.com/v6/61bced9bfb6c35fac9ed176b/latest/USD');
+                const data = await response.json();
+                usdCnyRate = data.conversion_rates.CNY;
+                usdRubRate = data.conversion_rates.RUB;
+                
+                const timestamp = new Date().getTime();
+                // 保存新汇率到localStorage
+                storeRates(usdCnyRate, usdRubRate);
+                
+                // 计算并显示人民币兑卢布汇率
+                const cnyRubRate = (usdRubRate / usdCnyRate).toFixed(4);
+                updateRateDisplay(timestamp, cnyRubRate);
+                
+                // 如果有输入值，重新计算价格
+                calculatePrice();
+            } catch (error) {
+                console.error('获取汇率失败:', error);
+                document.getElementById('loading-text').textContent = '使用离线汇率';
+                const cnyRubRate = (usdRubRate / usdCnyRate).toFixed(4);
+                document.getElementById('rate-value').textContent = `1 CNY = ${cnyRubRate} RUB`;
+                document.getElementById('update-time').textContent = '使用默认汇率';
+            }
+        }
+
+        // 页面加载时获取汇率
         document.addEventListener('DOMContentLoaded', function() {
+            fetchExchangeRates();
+            
+            // 设置定时器，每小时更新一次汇率
+            setInterval(fetchExchangeRates, 3600000);
+
+            // 添加物流商选择事件监听
+            document.getElementById('logisticsProvider').addEventListener('change', function() {
+                const shippingMethodContainer = document.getElementById('shippingMethodContainer');
+                const shippingMethodSelect = document.getElementById('shippingMethod');
+                
+                if (this.value) {
+                    // 显示运输方式选择
+                    shippingMethodContainer.style.display = 'block';
+                    
+                    // 根据物流商显示/隐藏相应的运输方式选项
+                    const options = shippingMethodSelect.options;
+                    if (this.value === 'OYX') {
+                        // OYX支持陆运和陆空联运
+                        for (let i = 0; i < options.length; i++) {
+                            if (options[i].value === 'air') {
+                                options[i].style.display = 'none';
+                            } else {
+                                options[i].style.display = '';
+                            }
+                        }
+                    } else {
+                        // 其他物流商显示所有运输方式
+                        for (let i = 0; i < options.length; i++) {
+                            options[i].style.display = '';
+                        }
+                    }
+                } else {
+                    // 隐藏运输方式选择
+                    shippingMethodContainer.style.display = 'none';
+                }
+                
+                // 重置运输方式选择
+                shippingMethodSelect.value = '';
+                
+                // 重置物流方案显示为默认文字
+                document.getElementById('shippingTypeDisplay').textContent = '自动识别适用物流方案';
+                
+                // 清空计算结果
+                document.getElementById('results').innerHTML = '请选择运输方式';
+            });
+
+            // 添加运输方式选择事件监听
+            document.getElementById('shippingMethod').addEventListener('change', function() {
+                const logisticsProvider = document.getElementById('logisticsProvider').value;
+                const shippingMethod = this.value;
+                
+                if (logisticsProvider && shippingMethod) {
+                    calculatePrice();
+                } else {
+                    document.getElementById('results').innerHTML = '请选择运输方式';
+                }
+            });
+
             const inputs = document.querySelectorAll('input[type="number"]');
             inputs.forEach(input => {
-                input.addEventListener('input', calculatePrice);
+                input.addEventListener('input', function() {
+                    // 重置物流方案显示为默认文字
+                    document.getElementById('shippingTypeDisplay').textContent = '自动识别适用物流方案';
+                    calculatePrice();
+                });
             });
+
+            // 初始化时显示提示信息
+            document.getElementById('results').innerHTML = '请选择物流商';
         });
 
         function getShippingType(price, weight) {
+            const logisticsProvider = document.getElementById('logisticsProvider').value;
+            const shippingMethod = document.getElementById('shippingMethod').value;
+            
+            // CEL陆运的特殊逻辑
+            if (logisticsProvider === 'CEL' && shippingMethod === 'land') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1500) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'celLandSuperLight';
+                    } else if (weight >= 500 && weight <= 25000) {
+                        return 'celLandLowBig';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7000) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'celLandMediumSmall';
+                    } else if (weight >= 2000 && weight <= 25000) {
+                        return 'celLandMediumBig';
+                    }
+                } else if (rubPrice > 7000 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'celLandHighSmall';
+                    } else if (weight >= 5001 && weight <= 25000) {
+                        return 'celLandHighBig';
+                    }
+                }
+                return null;
+            }
+
+            // CEL陆空联运的特殊逻辑
+            if (logisticsProvider === 'CEL' && shippingMethod === 'air_land') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1500) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'celAirLandSuperLight';
+                    } else if (weight >= 500 && weight <= 25000) {
+                        return 'celAirLandLowBig';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7000) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'celAirLandMediumSmall';
+                    } else if (weight >= 2000 && weight <= 25000) {
+                        return 'celAirLandMediumBig';
+                    }
+                } else if (rubPrice > 7000 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'celAirLandHighSmall';
+                    } else if (weight >= 5001 && weight <= 25000) {
+                        return 'celAirLandHighBig';
+                    }
+                }
+                return null;
+            }
+
+            // CEL空运的特殊逻辑
+            if (logisticsProvider === 'CEL' && shippingMethod === 'air') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1500) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'celAirSuperLight';
+                    } else if (weight >= 500 && weight <= 25000) {
+                        return 'celAirLowBig';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7000) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'celAirMediumSmall';
+                    } else if (weight >= 2000 && weight <= 25000) {
+                        return 'celAirMediumBig';
+                    }
+                } else if (rubPrice > 7000 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'celAirHighSmall';
+                    } else if (weight >= 5001 && weight <= 25000) {
+                        return 'celAirHighBig';
+                    }
+                }
+                return null;
+            }
+
+            // UNI陆空联运的特殊逻辑
+            if (logisticsProvider === 'UNI' && shippingMethod === 'air_land') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1500) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'uniAirLandSuperLight';
+                    } else if (weight >= 501 && weight <= 25000) {
+                        return 'uniAirLandLowBig';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7000) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'uniAirLandMediumSmall';
+                    } else if (weight >= 2001 && weight <= 25000) {
+                        return 'uniAirLandMediumBig';
+                    }
+                } else if (rubPrice > 7000 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'uniAirLandHighSmall';
+                    } else if (weight >= 5001 && weight <= 25000) {
+                        return 'uniAirLandHighBig';
+                    }
+                }
+                return null;
+            }
+
+            // UNI陆运的特殊逻辑
+            if (logisticsProvider === 'UNI' && shippingMethod === 'land') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1500) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'uniLandSuperLight';
+                    } else if (weight >= 501 && weight <= 25000) {
+                        return 'uniLandLowBig';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7000) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'uniLandMediumSmall';
+                    } else if (weight >= 2001 && weight <= 25000) {
+                        return 'uniLandMediumBig';
+                    }
+                } else if (rubPrice > 7000 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'uniLandHighSmall';
+                    } else if (weight >= 5001 && weight <= 25000) {
+                        return 'uniLandHighBig';
+                    }
+                }
+                return null;
+            }
+
+            // UNI空运的特殊逻辑
+            if (logisticsProvider === 'UNI' && shippingMethod === 'air') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1500) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'uniSuperLight';
+                    } else if (weight >= 501 && weight <= 25000) {
+                        return 'uniLowBig';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7000) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'uniMediumSmall';
+                    } else if (weight >= 2001 && weight <= 25000) {
+                        return 'uniMediumBig';
+                    }
+                } else if (rubPrice > 7000 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'uniHighSmall';
+                    } else if (weight >= 5001 && weight <= 25000) {
+                        return 'uniHighBig';
+                    }
+                }
+                return null;
+            }
+
+            // GUOO空运的特殊逻辑
+            if (logisticsProvider === 'GUOO' && shippingMethod === 'air') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1700) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'superLight';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7700) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'mediumSmall';
+                    }
+                } else if (rubPrice > 7700 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'highSmall';
+                    }
+                }
+                return null;
+            }
+
+            // GUOO陆空联运的特殊逻辑
+            if (logisticsProvider === 'GUOO' && shippingMethod === 'air_land') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1700) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'stdSuperLight';
+                    } else if (weight >= 501 && weight <= 25000) {
+                        return 'stdLowBig';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7700) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'stdMediumSmall';
+                    } else if (weight >= 2001 && weight <= 25000) {
+                        return 'stdMediumBig';
+                    }
+                } else if (rubPrice > 7700 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'stdHighSmall';
+                    } else if (weight >= 5001 && weight <= 25000) {
+                        return 'stdHighBig';
+                    }
+                }
+                return null;
+            }
+
+            // GUOO陆运的特殊逻辑
+            if (logisticsProvider === 'GUOO' && shippingMethod === 'land') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1700) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'ecoSuperLight';
+                    } else if (weight >= 501 && weight <= 25000) {
+                        return 'ecoLowBig';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7700) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'ecoMediumSmall';
+                    } else if (weight >= 2001 && weight <= 25000) {
+                        return 'ecoMediumBig';
+                    }
+                } else if (rubPrice > 7700 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'ecoHighSmall';
+                    } else if (weight >= 5001 && weight <= 25000) {
+                        return 'ecoHighBig';
+                    }
+                }
+                return null;
+            }
+            
+            // IML空运的特殊逻辑
+            if (logisticsProvider === 'IML' && shippingMethod === 'air') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1500) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'imlAirSuperLight';
+                    } else if (weight >= 500 && weight <= 25000) {
+                        return 'imlAirLowBig';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7000) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'imlAirMediumSmall';
+                    }
+                } else if (rubPrice > 7000 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'imlAirHighSmall';
+                    }
+                }
+                return null;
+            }
+
+            // IML陆运的特殊逻辑
+            if (logisticsProvider === 'IML' && shippingMethod === 'land') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1500) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'imlLandSuperLight';
+                    } else if (weight >= 500 && weight <= 25000) {
+                        return 'imlLandLowBig';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7000) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'imlLandMediumSmall';
+                    } else if (weight >= 2000 && weight <= 25000) {
+                        return 'imlLandMediumBig';
+                    }
+                } else if (rubPrice > 7000 && rubPrice <= 250000) {
+                    if (weight >= 5000 && weight <= 25000) {
+                        return 'imlLandHighBig';
+                    }
+                }
+                return null;
+            }
+
+            // OYX陆运的特殊逻辑
+            if (logisticsProvider === 'OYX' && shippingMethod === 'land') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1600) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'oyxLandSuperLight';
+                    } else if (weight >= 501 && weight <= 25000) {
+                        return 'oyxLandLowBig';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7200) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'oyxLandMediumSmall';
+                    }
+                } else if (rubPrice > 7000 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'oyxLandHighSmall';
+                    }
+                }
+                return null;
+            }
+
+            // IML陆空联运的特殊逻辑
+            if (logisticsProvider === 'IML' && shippingMethod === 'air_land') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1500) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'imlAirLandSuperLight';
+                    } else if (weight >= 500 && weight <= 25000) {
+                        return 'imlAirLandLowBig';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7000) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'imlAirLandMediumSmall';
+                    } else if (weight >= 2000 && weight <= 25000) {
+                        return 'imlAirLandMediumBig';
+                    }
+                } else if (rubPrice > 7000 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'imlAirLandHighSmall';
+                    } else if (weight >= 5000 && weight <= 25000) {
+                        return 'imlAirLandHighBig';
+                    }
+                }
+                return null;
+            }
+
+            // URAL陆空联运的特殊逻辑
+            if (logisticsProvider === 'URAL' && shippingMethod === 'air_land') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1500) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'uralAirLandSuperLight';
+                    } else if (weight >= 501 && weight <= 25000) {
+                        return 'uralAirLandLowBig';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7000) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'uralAirLandMediumSmall';
+                    } else if (weight >= 2001 && weight <= 25000) {
+                        return 'uralAirLandMediumBig';
+                    }
+                } else if (rubPrice > 7000 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'uralAirLandHighSmall';
+                    } else if (weight >= 5001 && weight <= 25000) {
+                        return 'uralAirLandHighBig';
+                    }
+                }
+                return null;
+            }
+
+            // URAL空运的特殊逻辑
+            if (logisticsProvider === 'URAL' && shippingMethod === 'air') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1500) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'uralAirSuperLight';
+                    } else if (weight >= 501 && weight <= 25000) {
+                        return 'uralAirLowBig';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7000) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'uralAirMediumSmall';
+                    } else if (weight >= 2001 && weight <= 25000) {
+                        return 'uralAirMediumBig';
+                    }
+                } else if (rubPrice > 7000 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'uralAirHighSmall';
+                    } else if (weight >= 5001 && weight <= 25000) {
+                        return 'uralAirHighBig';
+                    }
+                }
+                return null;
+            }
+
+            // URAL陆运的特殊逻辑
+            if (logisticsProvider === 'URAL' && shippingMethod === 'land') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1500) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'uralLandSuperLight';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7000) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'uralLandMediumSmall';
+                    }
+                } else if (rubPrice > 7000 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'uralLandHighSmall';
+                    }
+                }
+                return null;
+            }
+
+            // 其他物流商的默认逻辑
             if (price <= 120) {
                 if (weight >= 0.1 && weight <= 500) {
                     return 'superLight';
@@ -216,10 +848,258 @@
                     return 'highBig';
                 }
             }
+
+            // OYX陆空联运的特殊逻辑
+            if (logisticsProvider === 'OYX' && shippingMethod === 'air_land') {
+                const rubPrice = price / usdCnyRate * usdRubRate;
+                
+                if (rubPrice >= 0.1 && rubPrice <= 1600) {
+                    if (weight >= 0.1 && weight <= 500) {
+                        return 'oyxAirLandSuperLight';
+                    }
+                } else if (rubPrice > 1500 && rubPrice <= 7200) {
+                    if (weight >= 0.1 && weight <= 2000) {
+                        return 'oyxAirLandMediumSmall';
+                    } else if (weight >= 2001 && weight <= 25000) {
+                        return 'oyxAirLandMediumBig';
+                    }
+                } else if (rubPrice > 7000 && rubPrice <= 250000) {
+                    if (weight >= 0.1 && weight <= 5000) {
+                        return 'oyxAirLandHighSmall';
+                    } else if (weight >= 5001 && weight <= 25000) {
+                        return 'oyxAirLandHighBig';
+                    }
+                }
+                return null;
+            }
+
+            // OYX陆运的特殊逻辑
+            if (logisticsProvider === 'OYX' && shippingMethod === 'land') {
+                switch(type) {
+                    case 'oyxLandSuperLight': return '经济超级轻小件 (0.1-500g)';
+                    case 'oyxLandLowBig': return '经济低客单轻小件 (501-25000g)';
+                    case 'oyxLandMediumSmall': return '经济轻小件 (0.1-2000g)';
+                    case 'oyxLandHighSmall': return '经济高客单轻小件 (0.1-5000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // OYX陆空联运的特殊名称
+            if (logisticsProvider === 'OYX' && shippingMethod === 'air_land') {
+                switch(type) {
+                    case 'oyxAirLandSuperLight': return '标准超级轻小件 (0.1-500g)';
+                    case 'oyxAirLandMediumSmall': return '标准轻小件 (0.1-2000g)';
+                    case 'oyxAirLandMediumBig': return '标准大件 (2001-25000g)';
+                    case 'oyxAirLandHighSmall': return '标准高客单轻小件 (0.1-5000g)';
+                    case 'oyxAirLandHighBig': return '标准高客单大件 (5001-25000g)';
+                    default: return '不适用';
+                }
+            }
             return null;
         }
 
         function getShippingTypeName(type) {
+            const logisticsProvider = document.getElementById('logisticsProvider').value;
+            const shippingMethod = document.getElementById('shippingMethod').value;
+
+            // CEL陆运的特殊名称
+            if (logisticsProvider === 'CEL' && shippingMethod === 'land') {
+                switch(type) {
+                    case 'celLandSuperLight': return '经济超级轻小件 (0.1-500g)';
+                    case 'celLandLowBig': return '经济低客单轻小件 (500-25000g)';
+                    case 'celLandMediumSmall': return '经济轻小件 (0.1-2000g)';
+                    case 'celLandMediumBig': return '经济大件 (2000-25000g)';
+                    case 'celLandHighSmall': return '经济高客单轻小件 (0.1-5000g)';
+                    case 'celLandHighBig': return '经济高客单大件 (5001-25000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // CEL陆空联运的特殊名称
+            if (logisticsProvider === 'CEL' && shippingMethod === 'air_land') {
+                switch(type) {
+                    case 'celAirLandSuperLight': return '标准超级轻小件 (0.1-500g)';
+                    case 'celAirLandLowBig': return '标准低客单大件 (500-25000g)';
+                    case 'celAirLandMediumSmall': return '标准轻小件 (0.1-2000g)';
+                    case 'celAirLandMediumBig': return '标准大件 (2000-25000g)';
+                    case 'celAirLandHighSmall': return '标准高客单轻小件 (0.1-5000g)';
+                    case 'celAirLandHighBig': return '标准高客单大件 (5000-25000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // UNI陆空联运的特殊名称
+            if (logisticsProvider === 'UNI' && shippingMethod === 'air_land') {
+                switch(type) {
+                    case 'uniAirLandSuperLight': return '超级轻小件 (0.1-500g)';
+                    case 'uniAirLandLowBig': return '低客单标准件 (501-25000g)';
+                    case 'uniAirLandMediumSmall': return '轻小件 (0.1-2000g)';
+                    case 'uniAirLandMediumBig': return '大件 (2001-25000g)';
+                    case 'uniAirLandHighSmall': return '高客单轻小件 (0.1-5000g)';
+                    case 'uniAirLandHighBig': return '高客单大件 (5001-25000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // UNI陆运的特殊名称
+            if (logisticsProvider === 'UNI' && shippingMethod === 'land') {
+                switch(type) {
+                    case 'uniLandSuperLight': return '超级轻小件 (0.1-500g)';
+                    case 'uniLandLowBig': return '低客单标准件 (501-25000g)';
+                    case 'uniLandMediumSmall': return '轻小件 (0.1-2000g)';
+                    case 'uniLandMediumBig': return '大件 (2001-25000g)';
+                    case 'uniLandHighSmall': return '高客单轻小件 (0.1-5000g)';
+                    case 'uniLandHighBig': return '高客单大件 (5001-25000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // UNI空运的特殊名称
+            if (logisticsProvider === 'UNI' && shippingMethod === 'air') {
+                switch(type) {
+                    case 'uniSuperLight': return '超级轻小件 (0.1-500g)';
+                    case 'uniLowBig': return '低客单标准件 (501-25000g)';
+                    case 'uniMediumSmall': return '轻小件 (0.1-2000g)';
+                    case 'uniMediumBig': return '大件 (2001-25000g)';
+                    case 'uniHighSmall': return '高客单轻小件 (0.1-5000g)';
+                    case 'uniHighBig': return '高客单大件 (5001-25000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // GUOO空运的特殊名称
+            if (logisticsProvider === 'GUOO' && shippingMethod === 'air') {
+                switch(type) {
+                    case 'superLight': return '特快超级轻小件 (0.1-500g)';
+                    case 'mediumSmall': return '特快轻小件 (0.1-2000g)';
+                    case 'highSmall': return '特快高客单轻小件 (0.1-5000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // GUOO陆空联运的特殊名称
+            if (logisticsProvider === 'GUOO' && shippingMethod === 'air_land') {
+                switch(type) {
+                    case 'stdSuperLight': return '标准超级轻小件 (0.1-500g)';
+                    case 'stdLowBig': return '标准低客单轻小件 (501-25000g)';
+                    case 'stdMediumSmall': return '标准轻小件 (0.1-2000g)';
+                    case 'stdMediumBig': return '标准大件 (2001-25000g)';
+                    case 'stdHighSmall': return '标准高客单轻小件 (0.1-5000g)';
+                    case 'stdHighBig': return '标准高客单大件 (5001-25000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // GUOO陆运的特殊名称
+            if (logisticsProvider === 'GUOO' && shippingMethod === 'land') {
+                switch(type) {
+                    case 'ecoSuperLight': return '经济超级轻小件 (0.1-500g)';
+                    case 'ecoLowBig': return '经济低客单轻小件 (501-25000g)';
+                    case 'ecoMediumSmall': return '经济轻小件 (0.1-2000g)';
+                    case 'ecoMediumBig': return '经济大件 (2001-25000g)';
+                    case 'ecoHighSmall': return '经济高客单轻小件 (0.1-5000g)';
+                    case 'ecoHighBig': return '经济高客单大件 (5001-25000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // CEL空运的特殊名称
+            if (logisticsProvider === 'CEL' && shippingMethod === 'air') {
+                switch(type) {
+                    case 'celAirSuperLight': return '特快超级轻小件 (0.1-500g)';
+                    case 'celAirLowBig': return '特快低客单轻小件 (500-25000g)';
+                    case 'celAirMediumSmall': return '特快轻小件 (0.1-2000g)';
+                    case 'celAirMediumBig': return '特快大件 (2000-25000g)';
+                    case 'celAirHighSmall': return '特快高客单轻小件 (0.1-5000g)';
+                    case 'celAirHighBig': return '特快高客单大件 (5001-25000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // IML陆空联运的特殊名称
+            if (logisticsProvider === 'IML' && shippingMethod === 'air_land') {
+                switch(type) {
+                    case 'imlAirLandSuperLight': return '标准超级轻小件 (0.1-500g)';
+                    case 'imlAirLandLowBig': return '标准低客单大件 (500-25000g)';
+                    case 'imlAirLandMediumSmall': return '标准轻小件 (0.1-2000g)';
+                    case 'imlAirLandMediumBig': return '标准大件 (2000-25000g)';
+                    case 'imlAirLandHighSmall': return '标准高客单轻小件 (0.1-5000g)';
+                    case 'imlAirLandHighBig': return '标准高客单大件 (5000-25000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // IML陆运的特殊名称
+            if (logisticsProvider === 'IML' && shippingMethod === 'land') {
+                switch(type) {
+                    case 'imlLandSuperLight': return '经济超级轻小件 (0.1-500g)';
+                    case 'imlLandLowBig': return '经济低客单大件 (500-25000g)';
+                    case 'imlLandMediumSmall': return '经济轻小件 (0.1-2000g)';
+                    case 'imlLandMediumBig': return '经济大件 (2000-25000g)';
+                    case 'imlLandHighBig': return '经济高客单大件 (5000-25000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // OYX陆运的特殊名称
+            if (logisticsProvider === 'OYX' && shippingMethod === 'land') {
+                switch(type) {
+                    case 'oyxLandSuperLight': return '经济超级轻小件 (0.1-500g)';
+                    case 'oyxLandLowBig': return '经济低客单轻小件 (501-25000g)';
+                    case 'oyxLandMediumSmall': return '经济轻小件 (0.1-2000g)';
+                    case 'oyxLandHighSmall': return '经济高客单轻小件 (0.1-5000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // IML空运的特殊名称
+            if (logisticsProvider === 'IML' && shippingMethod === 'air') {
+                switch(type) {
+                    case 'imlAirSuperLight': return '特快超级轻小件 (0.1-500g)';
+                    case 'imlAirLowBig': return '特快低客单大件 (500-25000g)';
+                    case 'imlAirMediumSmall': return '特快轻小件 (0.1-2000g)';
+                    case 'imlAirHighSmall': return '特快高客单轻小件 (0.1-5000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // URAL陆空联运的特殊名称
+            if (logisticsProvider === 'URAL' && shippingMethod === 'air_land') {
+                switch(type) {
+                    case 'uralAirLandSuperLight': return '标准超级轻小件 (0.1-500g)';
+                    case 'uralAirLandLowBig': return '标准低客单轻小件 (501-25000g)';
+                    case 'uralAirLandMediumSmall': return '标准轻小件 (0.1-2000g)';
+                    case 'uralAirLandMediumBig': return '标准大件 (2001-25000g)';
+                    case 'uralAirLandHighSmall': return '标准高客单轻小件 (0.1-5000g)';
+                    case 'uralAirLandHighBig': return '标准高客单大件 (5001-25000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // URAL空运的特殊名称
+            if (logisticsProvider === 'URAL' && shippingMethod === 'air') {
+                switch(type) {
+                    case 'uralAirSuperLight': return '特快超级轻小件 (0.1-500g)';
+                    case 'uralAirLowBig': return '特快低客单轻小件 (501-25000g)';
+                    case 'uralAirMediumSmall': return '特快轻小件 (0.1-2000g)';
+                    case 'uralAirMediumBig': return '特快大件 (2001-25000g)';
+                    case 'uralAirHighSmall': return '特快高客单轻小件 (0.1-5000g)';
+                    case 'uralAirHighBig': return '特快高客单大件 (5001-25000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // URAL陆运的特殊名称
+            if (logisticsProvider === 'URAL' && shippingMethod === 'land') {
+                switch(type) {
+                    case 'uralLandSuperLight': return '经济超级轻小件 (0.1-500g)';
+                    case 'uralLandMediumSmall': return '经济轻小件 (0.1-2000g)';
+                    case 'uralLandHighSmall': return '经济高客单轻小件 (0.1-5000g)';
+                    default: return '不适用';
+                }
+            }
+
+            // 其他物流商的默认名称
             switch(type) {
                 case 'superLight': return '超级轻小件 (0.1-500g)';
                 case 'lowBig': return '低客单大件 (0.1-25000g)';
@@ -232,6 +1112,502 @@
         }
 
         function calculateShippingCost(weight, type) {
+            const logisticsProvider = document.getElementById('logisticsProvider').value;
+            const shippingMethod = document.getElementById('shippingMethod').value;
+
+            // CEL陆运的特殊计算
+            if (logisticsProvider === 'CEL' && shippingMethod === 'land') {
+                switch(type) {
+                    case 'celLandSuperLight':
+                        if (weight >= 0.1 && weight <= 500) {
+                            return weight * 0.023 + 2.8;
+                        }
+                        return 0;
+                    case 'celLandLowBig':
+                        if (weight >= 500 && weight <= 25000) {
+                            return weight * 0.0165 + 23;
+                        }
+                        return 0;
+                    case 'celLandMediumSmall':
+                        if (weight >= 0.1 && weight <= 2000) {
+                            return weight * 0.023 + 14;
+                        }
+                        return 0;
+                    case 'celLandMediumBig':
+                        if (weight >= 2000 && weight <= 25000) {
+                            return weight * 0.017 + 35.9;
+                        }
+                        return 0;
+                    case 'celLandHighSmall':
+                        if (weight >= 0.1 && weight <= 5000) {
+                            return weight * 0.0239 + 20;
+                        }
+                        return 0;
+                    case 'celLandHighBig':
+                        if (weight >= 5001 && weight <= 25000) {
+                            return weight * 0.017 + 61.9;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            // CEL陆空联运的特殊计算
+            if (logisticsProvider === 'CEL' && shippingMethod === 'air_land') {
+                switch(type) {
+                    case 'celAirLandSuperLight':
+                        if (weight >= 0.1 && weight <= 500) {
+                            return weight * 0.0295 + 2.8;
+                        }
+                        return 0;
+                    case 'celAirLandLowBig':
+                        if (weight >= 500 && weight <= 25000) {
+                            return weight * 0.02495 + 18;
+                        }
+                        return 0;
+                    case 'celAirLandMediumSmall':
+                        if (weight >= 0.1 && weight <= 2000) {
+                            return weight * 0.0286 + 14.9;
+                        }
+                        return 0;
+                    case 'celAirLandMediumBig':
+                        if (weight >= 2000 && weight <= 25000) {
+                            return weight * 0.024 + 35.9;
+                        }
+                        return 0;
+                    case 'celAirLandHighSmall':
+                        if (weight >= 0.1 && weight <= 5000) {
+                            return weight * 0.0269 + 20;
+                        }
+                        return 0;
+                    case 'celAirLandHighBig':
+                        if (weight >= 5001 && weight <= 25000) {
+                            return weight * 0.025 + 61.9;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            // CEL空运的特殊计算
+            if (logisticsProvider === 'CEL' && shippingMethod === 'air') {
+                switch(type) {
+                    case 'celAirSuperLight':
+                        if (weight >= 0.1 && weight <= 500) {
+                            return weight * 0.040 + 2.8;
+                        }
+                        return 0;
+                    case 'celAirLowBig':
+                        if (weight >= 500 && weight <= 25000) {
+                            return weight * 0.03295 + 18;
+                        }
+                        return 0;
+                    case 'celAirMediumSmall':
+                        if (weight >= 0.1 && weight <= 2000) {
+                            return weight * 0.040 + 14.9;
+                        }
+                        return 0;
+                    case 'celAirMediumBig':
+                        if (weight >= 2000 && weight <= 25000) {
+                            return weight * 0.033 + 35.9;
+                        }
+                        return 0;
+                    case 'celAirHighSmall':
+                        if (weight >= 0.1 && weight <= 5000) {
+                            return weight * 0.040 + 20;
+                        }
+                        return 0;
+                    case 'celAirHighBig':
+                        if (weight >= 5001 && weight <= 25000) {
+                            return weight * 0.032 + 61.9;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            // UNI陆空联运的特殊计算
+            if (logisticsProvider === 'UNI' && shippingMethod === 'air_land') {
+                switch(type) {
+                    case 'uniAirLandSuperLight':
+                        if (weight >= 0.1 && weight <= 500) {
+                            return weight * 0.035 + 3;
+                        }
+                        return 0;
+                    case 'uniAirLandLowBig':
+                        if (weight >= 501 && weight <= 25000) {
+                            return weight * 0.025 + 23;
+                        }
+                        return 0;
+                    case 'uniAirLandMediumSmall':
+                        if (weight >= 0.1 && weight <= 2000) {
+                            return weight * 0.035 + 16;
+                        }
+                        return 0;
+                    case 'uniAirLandMediumBig':
+                        if (weight >= 2001 && weight <= 25000) {
+                            return weight * 0.025 + 36;
+                        }
+                        return 0;
+                    case 'uniAirLandHighSmall':
+                        if (weight >= 0.1 && weight <= 5000) {
+                            return weight * 0.035 + 22;
+                        }
+                        return 0;
+                    case 'uniAirLandHighBig':
+                        if (weight >= 5001 && weight <= 25000) {
+                            return weight * 0.028 + 62;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            // UNI陆运的特殊计算
+            if (logisticsProvider === 'UNI' && shippingMethod === 'land') {
+                switch(type) {
+                    case 'uniLandSuperLight':
+                        if (weight >= 0.1 && weight <= 500) {
+                            return weight * 0.025 + 3;
+                        }
+                        return 0;
+                    case 'uniLandLowBig':
+                        if (weight >= 501 && weight <= 25000) {
+                            return weight * 0.017 + 23;
+                        }
+                        return 0;
+                    case 'uniLandMediumSmall':
+                        if (weight >= 0.1 && weight <= 2000) {
+                            return weight * 0.025 + 16;
+                        }
+                        return 0;
+                    case 'uniLandMediumBig':
+                        if (weight >= 2001 && weight <= 25000) {
+                            return weight * 0.017 + 36;
+                        }
+                        return 0;
+                    case 'uniLandHighSmall':
+                        if (weight >= 0.1 && weight <= 5000) {
+                            return weight * 0.025 + 22;
+                        }
+                        return 0;
+                    case 'uniLandHighBig':
+                        if (weight >= 5001 && weight <= 25000) {
+                            return weight * 0.023 + 62;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            // UNI空运的特殊计算
+            if (logisticsProvider === 'UNI' && shippingMethod === 'air') {
+                switch(type) {
+                    case 'uniSuperLight':
+                        if (weight >= 0.1 && weight <= 500) {
+                            return weight * 0.045 + 3;
+                        }
+                        return 0;
+                    case 'uniLowBig':
+                        if (weight >= 501 && weight <= 25000) {
+                            return weight * 0.033 + 23;
+                        }
+                        return 0;
+                    case 'uniMediumSmall':
+                        if (weight >= 0.1 && weight <= 2000) {
+                            return weight * 0.045 + 19.5;
+                        }
+                        return 0;
+                    case 'uniMediumBig':
+                        if (weight >= 2001 && weight <= 25000) {
+                            return weight * 0.033 + 39.5;
+                        }
+                        return 0;
+                    case 'uniHighSmall':
+                        if (weight >= 0.1 && weight <= 5000) {
+                            return weight * 0.045 + 25.5;
+                        }
+                        return 0;
+                    case 'uniHighBig':
+                        if (weight >= 5001 && weight <= 25000) {
+                            return weight * 0.033 + 65.5;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            // GUOO空运的特殊计算
+            if (logisticsProvider === 'GUOO' && shippingMethod === 'air') {
+                switch(type) {
+                    case 'superLight':
+                        if (weight >= 0.1 && weight <= 500) {
+                            return weight * 0.045 + 3;
+                        }
+                        return 0;
+                    case 'mediumSmall':
+                        if (weight >= 0.1 && weight <= 2000) {
+                            return weight * 0.045 + 16;
+                        }
+                        return 0;
+                    case 'highSmall':
+                        if (weight >= 0.1 && weight <= 5000) {
+                            return weight * 0.045 + 22;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            // GUOO陆空联运的特殊计算
+            if (logisticsProvider === 'GUOO' && shippingMethod === 'air_land') {
+                switch(type) {
+                    case 'stdSuperLight':
+                        if (weight >= 0.1 && weight <= 500) {
+                            return weight * 0.035 + 3;
+                        }
+                        return 0;
+                    case 'stdLowBig':
+                        if (weight >= 501 && weight <= 25000) {
+                            return weight * 0.025 + 23;
+                        }
+                        return 0;
+                    case 'stdMediumSmall':
+                        if (weight >= 0.1 && weight <= 2000) {
+                            return weight * 0.035 + 16;
+                        }
+                        return 0;
+                    case 'stdMediumBig':
+                        if (weight >= 2001 && weight <= 25000) {
+                            return weight * 0.025 + 36;
+                        }
+                        return 0;
+                    case 'stdHighSmall':
+                        if (weight >= 0.1 && weight <= 5000) {
+                            return weight * 0.035 + 22;
+                        }
+                        return 0;
+                    case 'stdHighBig':
+                        if (weight >= 5001 && weight <= 25000) {
+                            return weight * 0.028 + 62;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            // GUOO陆运的特殊计算
+            if (logisticsProvider === 'GUOO' && shippingMethod === 'land') {
+                switch(type) {
+                    case 'ecoSuperLight':
+                        if (weight >= 0.1 && weight <= 500) {
+                            return weight * 0.024 + 2.8;
+                        }
+                        return 0;
+                    case 'ecoLowBig':
+                        if (weight >= 501 && weight <= 25000) {
+                            return weight * 0.017 + 23;
+                        }
+                        return 0;
+                    case 'ecoMediumSmall':
+                        if (weight >= 0.1 && weight <= 2000) {
+                            return weight * 0.025 + 16;
+                        }
+                        return 0;
+                    case 'ecoMediumBig':
+                        if (weight >= 2001 && weight <= 25000) {
+                            return weight * 0.017 + 36;
+                        }
+                        return 0;
+                    case 'ecoHighSmall':
+                        if (weight >= 0.1 && weight <= 5000) {
+                            return weight * 0.025 + 22;
+                        }
+                        return 0;
+                    case 'ecoHighBig':
+                        if (weight >= 5001 && weight <= 25000) {
+                            return weight * 0.023 + 62;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            // IML陆空联运的特殊计算
+            if (logisticsProvider === 'IML' && shippingMethod === 'air_land') {
+                switch(type) {
+                    case 'imlAirLandSuperLight':
+                        if (weight >= 0.1 && weight <= 500) {
+                            return weight * 0.035 + 2.95;
+                        }
+                        return 0;
+                    case 'imlAirLandLowBig':
+                        if (weight >= 500 && weight <= 25000) {
+                            return weight * 0.025 + 22.95;
+                        }
+                        return 0;
+                    case 'imlAirLandMediumSmall':
+                        if (weight >= 0.1 && weight <= 2000) {
+                            return weight * 0.035 + 15.95;
+                        }
+                        return 0;
+                    case 'imlAirLandMediumBig':
+                        if (weight >= 2000 && weight <= 25000) {
+                            return weight * 0.025 + 35.95;
+                        }
+                        return 0;
+                    case 'imlAirLandHighSmall':
+                        if (weight >= 0.1 && weight <= 5000) {
+                            return weight * 0.035 + 21.95;
+                        }
+                        return 0;
+                    case 'imlAirLandHighBig':
+                        if (weight >= 5000 && weight <= 25000) {
+                            return weight * 0.028 + 61.9;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            // IML空运的特殊计算
+            if (logisticsProvider === 'IML' && shippingMethod === 'air') {
+                switch(type) {
+                    case 'imlAirSuperLight':
+                        if (weight >= 0.1 && weight <= 500) {
+                            return weight * 0.045 + 2.95;
+                        }
+                        return 0;
+                    case 'imlAirLowBig':
+                        if (weight >= 500 && weight <= 25000) {
+                            return weight * 0.033 + 22.95;
+                        }
+                        return 0;
+                    case 'imlAirMediumSmall':
+                        if (weight >= 0.1 && weight <= 2000) {
+                            return weight * 0.045 + 15.95;
+                        }
+                        return 0;
+                    case 'imlAirHighSmall':
+                        if (weight >= 0.1 && weight <= 5000) {
+                            return weight * 0.045 + 21.95;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            // URAL陆空联运的特殊计算
+            if (logisticsProvider === 'URAL' && shippingMethod === 'air_land') {
+                switch(type) {
+                    case 'uralAirLandSuperLight':
+                        if (weight >= 0.1 && weight <= 500) {
+                            return weight * 0.032 + 2.8;
+                        }
+                        return 0;
+                    case 'uralAirLandLowBig':
+                        if (weight >= 501 && weight <= 25000) {
+                            return weight * 0.025 + 23;
+                        }
+                        return 0;
+                    case 'uralAirLandMediumSmall':
+                        if (weight >= 0.1 && weight <= 2000) {
+                            return weight * 0.035 + 16;
+                        }
+                        return 0;
+                    case 'uralAirLandMediumBig':
+                        if (weight >= 2001 && weight <= 25000) {
+                            return weight * 0.025 + 36;
+                        }
+                        return 0;
+                    case 'uralAirLandHighSmall':
+                        if (weight >= 0.1 && weight <= 5000) {
+                            return weight * 0.035 + 22;
+                        }
+                        return 0;
+                    case 'uralAirLandHighBig':
+                        if (weight >= 5001 && weight <= 25000) {
+                            return weight * 0.028 + 62;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            // URAL空运的特殊计算
+            if (logisticsProvider === 'URAL' && shippingMethod === 'air') {
+                switch(type) {
+                    case 'uralAirSuperLight':
+                        if (weight >= 0.1 && weight <= 500) {
+                            return weight * 0.042 + 2.8;
+                        }
+                        return 0;
+                    case 'uralAirLowBig':
+                        if (weight >= 501 && weight <= 25000) {
+                            return weight * 0.033 + 23;
+                        }
+                        return 0;
+                    case 'uralAirMediumSmall':
+                        if (weight >= 0.1 && weight <= 2000) {
+                            return weight * 0.045 + 16;
+                        }
+                        return 0;
+                    case 'uralAirMediumBig':
+                        if (weight >= 2001 && weight <= 25000) {
+                            return weight * 0.033 + 36;
+                        }
+                        return 0;
+                    case 'uralAirHighSmall':
+                        if (weight >= 0.1 && weight <= 5000) {
+                            return weight * 0.045 + 22;
+                        }
+                        return 0;
+                    case 'uralAirHighBig':
+                        if (weight >= 5001 && weight <= 25000) {
+                            return weight * 0.033 + 62;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            // URAL陆运的特殊计算
+            if (logisticsProvider === 'URAL' && shippingMethod === 'land') {
+                switch(type) {
+                    case 'uralLandSuperLight':
+                        if (weight >= 0.1 && weight <= 500) {
+                            return weight * 0.025 + 3;
+                        }
+                        return 0;
+                    case 'uralLandMediumSmall':
+                        if (weight >= 0.1 && weight <= 2000) {
+                            return weight * 0.025 + 16;
+                        }
+                        return 0;
+                    case 'uralLandHighSmall':
+                        if (weight >= 0.1 && weight <= 5000) {
+                            return weight * 0.025 + 22;
+                        }
+                        return 0;
+                    default:
+                        return 0;
+                }
+            }
+
+            // 其他物流商的默认计算
             switch(type) {
                 case 'superLight':
                     if (weight >= 0.1 && weight <= 500) {
@@ -269,27 +1645,51 @@
         }
 
         function calculatePrice() {
-            // 获取输入值
+            // 获取所有必要的输入值
+            const logisticsProvider = document.getElementById('logisticsProvider').value;
+            const shippingMethod = document.getElementById('shippingMethod').value;
             const sellingPrice = parseFloat(document.getElementById('sellingPrice').value) || 0;
             const purchasePrice = parseFloat(document.getElementById('purchasePrice').value) || 0;
             const weight = parseFloat(document.getElementById('weight').value) || 0;
             const platformFee = parseFloat(document.getElementById('platformFee').value) || 20;
 
+            // 检查是否所有必要的选择和输入都已完成
+            if (!logisticsProvider) {
+                document.getElementById('results').innerHTML = '请选择物流商';
+                return;
+            }
+            if (!shippingMethod) {
+                document.getElementById('results').innerHTML = '请选择运输方式';
+                return;
+            }
+            if (!sellingPrice || !purchasePrice || weight <= 0) {
+                document.getElementById('results').innerHTML = '请输入基础信息';
+                return;
+            }
+
+            // 计算卢布价格
+            const rubPrice = sellingPrice / usdCnyRate * usdRubRate;
+
             // 根据价格和重量确定物流方案
-            const manualShippingType = document.getElementById('manualShippingType').value;
-            const shippingType = manualShippingType || getShippingType(sellingPrice, weight);
+            const shippingType = getShippingType(sellingPrice, weight);
             const shippingTypeName = getShippingTypeName(shippingType);
+
+            // 只有当所有必要输入都完成时才更新物流方案显示
+            if (sellingPrice && purchasePrice && weight > 0) {
+                document.getElementById('shippingTypeDisplay').textContent = shippingTypeName;
+            }
 
             // 计算
             const totalShippingCost = calculateShippingCost(weight, shippingType);
             const platformAmount = sellingPrice * (platformFee / 100);
             const totalCost = purchasePrice + totalShippingCost + platformAmount;
             const actualProfit = sellingPrice - totalCost;
-            const actualProfitMargin = (actualProfit / sellingPrice) * 100;
+            const actualProfitMargin = (actualProfit / purchasePrice) * 100;
 
             // 显示结果
             const results = document.getElementById('results');
             results.innerHTML = `
+                <div class="result-item">卢布售价: <span class="profit">₽${rubPrice.toFixed(2)}</span></div>
                 <div class="result-item">商品重量: ${weight.toFixed(2)} g</div>
                 <div class="result-item">适用物流方案: ${shippingTypeName}</div>
                 <div class="result-item">物流费用: ¥${totalShippingCost.toFixed(2)}</div>
