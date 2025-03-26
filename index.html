@@ -369,13 +369,28 @@
 
         // 页面加载时获取汇率
         document.addEventListener('DOMContentLoaded', async () => {
-            // 获取汇率
-            const rates = await fetchExchangeRates();
+            // 检查是否需要更新汇率
+            const storedRates = localStorage.getItem('exchangeRates');
+            let rates;
+            
+            if (storedRates) {
+                const { timestamp } = JSON.parse(storedRates);
+                // 如果存储的汇率超过1小时，则更新
+                if (Date.now() - timestamp >= 3600000) {
+                    rates = await fetchExchangeRates();
+                } else {
+                    // 使用存储的汇率
+                    rates = JSON.parse(storedRates);
+                    updateRateDisplay(rates.timestamp, rates.cnyRubRate);
+                }
+            } else {
+                // 如果没有存储的汇率，则获取新的
+                rates = await fetchExchangeRates();
+            }
+            
+            // 设置汇率变量
             usdCnyRate = rates.usdCnyRate;
             usdRubRate = rates.usdRubRate;
-            
-            // 每小时更新一次汇率
-            setInterval(fetchExchangeRates, 3600000);
             
             // 设置输入框的初始值
             document.getElementById('price').value = '100';
@@ -385,6 +400,9 @@
             
             // 计算初始结果
             calculatePrice();
+            
+            // 每小时更新一次汇率
+            setInterval(fetchExchangeRates, 3600000);
         });
 
         // 添加物流商选择事件监听
